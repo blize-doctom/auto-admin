@@ -1,0 +1,118 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Validation definitions
+    function isValidReport(data) {
+      return data.keys().hasAll(['id', 'studentName', 'studentClass', 'gender', 'counselorName', 'date', 'serviceCategory', 'rawNotes', 'summary', 'problemAnalysis', 'actionPlan', 'formalReportMarkdown', 'createdAt'])
+        && data.id is string && data.id.size() <= 128
+        && data.studentName is string && data.studentName.size() <= 128
+        && data.studentClass is string && data.studentClass.size() <= 64
+        && data.gender is string && (data.gender == 'Laki-laki' || data.gender == 'Perempuan' || data.gender == 'L/P')
+        && data.counselorName is string && data.counselorName.size() <= 128
+        && data.date is string && data.date.size() <= 64
+        && data.serviceCategory is string && (data.serviceCategory == 'Pribadi' || data.serviceCategory == 'Sosial' || data.serviceCategory == 'Belajar' || data.serviceCategory == 'Karir')
+        && data.rawNotes is string && data.rawNotes.size() <= 100000
+        && data.summary is string && data.summary.size() <= 100000
+        && data.problemAnalysis is string && data.problemAnalysis.size() <= 100000
+        && data.actionPlan is string && data.actionPlan.size() <= 100000
+        && data.formalReportMarkdown is string && data.formalReportMarkdown.size() <= 500000
+        && data.createdAt is string && data.createdAt.size() <= 128;
+    }
+
+    function isValidRpl(data) {
+      return data.keys().hasAll(['id', 'topic', 'classGrade', 'serviceField', 'serviceType', 'duration', 'focusPoints', 'objectives', 'activities', 'evaluation', 'fullRplMarkdown', 'createdAt'])
+        && data.id is string && data.id.size() <= 128
+        && data.topic is string && data.topic.size() <= 256
+        && data.classGrade is string && data.classGrade.size() <= 64
+        && data.serviceField is string && (data.serviceField == 'Pribadi' || data.serviceField == 'Sosial' || data.serviceField == 'Belajar' || data.serviceField == 'Karir')
+        && data.serviceType is string && data.serviceType.size() <= 128
+        && data.duration is string && data.duration.size() <= 64
+        && data.focusPoints is string && data.focusPoints.size() <= 100000
+        && data.objectives is string && data.objectives.size() <= 100000
+        && data.activities is string && data.activities.size() <= 100000
+        && data.evaluation is string && data.evaluation.size() <= 100000
+        && data.fullRplMarkdown is string && data.fullRplMarkdown.size() <= 500000
+        && data.createdAt is string && data.createdAt.size() <= 128;
+    }
+
+    function isValidRecap(data) {
+      return data.keys().hasAll(['id', 'period', 'dateGenerated', 'recordIds', 'identifiedTrends', 'recommedationsForSchool', 'fullRecapMarkdown', 'createdAt'])
+        && data.id is string && data.id.size() <= 128
+        && data.period is string && data.period.size() <= 128
+        && data.dateGenerated is string && data.dateGenerated.size() <= 64
+        && data.recordIds is list && data.recordIds.size() <= 200
+        && data.identifiedTrends is string && data.identifiedTrends.size() <= 100000
+        && data.recommedationsForSchool is string && data.recommedationsForSchool.size() <= 100000
+        && data.fullRecapMarkdown is string && data.fullRecapMarkdown.size() <= 500000
+        && data.createdAt is string && data.createdAt.size() <= 128;
+    }
+
+    function isValidEvent(data) {
+      return data.keys().hasAll(['id', 'title', 'date', 'time', 'type'])
+        && data.id is string && data.id.size() <= 128
+        && data.title is string && data.title.size() <= 256
+        && data.date is string && data.date.size() <= 64
+        && data.time is string && data.time.size() <= 64
+        && data.type is string && (data.type == 'konseling' || data.type == 'home_visit' || data.type == 'klasikal' || data.type == 'konferensi' || data.type == 'ortu' || data.type == 'lainnya');
+    }
+
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+
+      match /reports/{reportId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(reportId) && isValidReport(incoming());
+        allow update: if isOwner(userId) && isValidId(reportId) && isValidReport(incoming());
+        allow delete: if isOwner(userId) && isValidId(reportId);
+      }
+
+      match /rpls/{rplId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(rplId) && isValidRpl(incoming());
+        allow update: if isOwner(userId) && isValidId(rplId) && isValidRpl(incoming());
+        allow delete: if isOwner(userId) && isValidId(rplId);
+      }
+
+      match /recaps/{recapId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(recapId) && isValidRecap(incoming());
+        allow update: if isOwner(userId) && isValidId(recapId) && isValidRecap(incoming());
+        allow delete: if isOwner(userId) && isValidId(recapId);
+      }
+
+      match /events/{eventId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(eventId) && isValidEvent(incoming());
+        allow update: if isOwner(userId) && isValidId(eventId) && isValidEvent(incoming());
+        allow delete: if isOwner(userId) && isValidId(eventId);
+      }
+    }
+  }
+}

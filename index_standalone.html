@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BK Auto Admin — Standalone Edition</title>
+  
+  <!-- PWA Metadata -->
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/icon-192.svg" />
+  <meta name="theme-color" content="#181D18" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Tailwind CSS Configuration for Custom Theme -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            forest: {
+              50: '#F1F5F2',
+              100: '#E1E8E1',
+              200: '#C0CEC1',
+              300: '#A2B5A2',
+              400: '#9CC09E',
+              500: '#8F9F77',
+              600: '#4A5D4E',
+              700: '#2D382F',
+              800: '#181D18',
+              900: '#0C0E0C',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #0C0E0C;
+      color: #E1E8E1;
+      font-family: 'Inter', sans-serif;
+    }
+    /* Hide scrollbar for clean app design */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0C0E0C;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2D382F;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #4A5D4E;
+    }
+
+    /* Print Paper emulation styling */
+    .paper-page {
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    @media print {
+      body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background-color: white !important;
+        color: black !important;
+      }
+      .paper-page {
+        box-shadow: none !important;
+        border: none !important;
+        background: white !important;
+        color: black !important;
+      }
+    }
+  </style>
+</head>
+<body class="h-screen overflow-hidden flex flex-col md:flex-row antialiased">
+
+  <!-- ==================== SIDEBAR ==================== -->
+  <aside class="no-print w-full md:w-64 bg-forest-800 border-b md:border-b-0 md:border-r border-forest-700 flex flex-col shrink-0 z-20">
+    <!-- Header Logo -->
+    <div class="p-6 border-b border-forest-700 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-forest-700 border border-forest-600 flex items-center justify-center text-forest-400">
+        <i data-lucide="award" class="w-6 h-6"></i>
+      </div>
+      <div>
+        <h1 class="text-sm font-extrabold text-white tracking-tight uppercase">BK Auto Admin</h1>
+        <p class="text-[9px] text-[#A3B18A] font-bold font-mono tracking-widest leading-none">STANDALONE APP</p>
+      </div>
+    </div>
+
+    <!-- Navigation Menu Contacts -->
+    <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+      <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full px-4 py-3 flex items-center gap-3 text-xs font-bold text-forest-300 rounded-xl hover:bg-forest-700/50 hover:text-white transition duration-150">
+        <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+        <span>Dashboard</span>
+      </button>
+
+      <button onclick="switchTab('writer')" id="nav-writer" class="nav-btn w-full px-4 py-3 flex items-center gap-3 text-xs font-bold text-forest-300 rounded-xl hover:bg-forest-700/50 hover:text-white transition duration-150">
+        <i data-lucide="file-edit" class="w-4 h-4"></i>
+        <span>Buat Laporan / RPL</span>
+      </button>
+
+      <button onclick="switchTab('archives')" id="nav-archives" class="nav-btn w-full px-4 py-3 flex items-center gap-3 text-xs font-bold text-forest-300 rounded-xl hover:bg-forest-700/50 hover:text-white transition duration-150">
+        <i data-lucide="archive" class="w-4 h-4"></i>
+        <span>Arsip Berkas Digital</span>
+      </button>
+
+      <button onclick="switchTab('calendar')" id="nav-calendar" class="nav-btn w-full px-4 py-3 flex items-center gap-3 text-xs font-bold text-forest-300 rounded-xl hover:bg-forest-700/50 hover:text-white transition duration-150">
+        <i data-lucide="calendar" class="w-4 h-4"></i>
+        <span>Kalender Pelayanan</span>
+      </button>
+    </nav>
+
+    <!-- Footer PWA Tag -->
+    <div class="p-4 border-t border-forest-700 bg-forest-900/40 text-center">
+      <span class="text-[10px] font-mono font-bold text-forest-400 uppercase tracking-widest block">Offline-Ready PWA</span>
+      <p class="text-[9px] text-forest-300 mt-1">Dapat dijalankan langsung dengan menekan dua kali dari komputer lokal Anda atau di-host di GitHub Pages.</p>
+    </div>
+  </aside>
+
+  <!-- ==================== MAIN PANEL ==================== -->
+  <main class="flex-1 flex flex-col overflow-hidden bg-forest-900">
+
+    <!-- Header Topbar -->
+    <header class="no-print h-16 border-b border-forest-750 bg-forest-850 px-6 flex items-center justify-between z-10 shrink-0">
+      <div class="flex items-center gap-2">
+        <span id="tab-indicator" class="text-xs font-extrabold uppercase tracking-widest text-[#E1E8E1] bg-forest-700/60 px-3 py-1.5 rounded-lg border border-forest-600/30">Dashboard</span>
+      </div>
+      <div id="offline-badge" class="flex items-center gap-1.5 px-3 py-1 bg-forest-700/40 border border-forest-600/30 text-[10px] uppercase font-bold text-forest-400 rounded-full">
+        <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+        <span>Lokal Stroage Aktif</span>
+      </div>
+    </header>
+
+    <!-- Workspace Container (Dynamic Content) -->
+    <div class="flex-1 overflow-y-auto p-4 md:p-6">
+
+      <!-- ==================== TAB: DASHBOARD ==================== -->
+      <section id="tab-content-dashboard" class="tab-pane space-y-6 max-w-5xl mx-auto">
+        <div class="bg-forest-800 border border-forest-700 p-8 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl relative overflow-hidden">
+          <div class="space-y-3 z-10 relative">
+            <span class="text-xs bg-forest-600 font-extrabold font-mono text-white px-2.5 py-1 rounded">V1.0</span>
+            <h2 class="text-2xl font-black text-white leading-tight">Selamat Datang di BK Auto Admin Standalone!</h2>
+            <p class="text-xs text-forest-200 max-w-2xl leading-relaxed">
+              Ini adalah versi mandiri portabel dari asisten administrasi otomatis bimbingan konseling Anda. File tunggal ini menyimpan seluruh data klien, draf dokumen, rekap, Rencana Pelaksanaan Layanan (RPL), dan info kalender secara lokal di mesin Anda. <strong>Aman, offline, dan dapat disalin ke portofolio GitHub Anda secara langsung!</strong>
+            </p>
+            <div class="pt-2 flex flex-wrap gap-2.5">
+              <button onclick="switchTab('writer')" class="px-4 py-2 bg-forest-500 hover:bg-forest-400 text-forest-800 hover:text-black font-extrabold text-xs rounded-xl shadow-md transition-all">
+                Mulai Tulis Laporan BK
+              </button>
+              <button onclick="exportFullDataJSON()" class="px-4 py-2 bg-forest-700 hover:bg-forest-650 border border-forest-600 text-white font-bold text-xs rounded-xl transition-all">
+                Unduh Cadangan JSON
+              </button>
+            </div>
+          </div>
+          <div class="w-24 h-24 text-forest-500 shrink-0 select-none z-10">
+            <i data-lucide="award" class="w-full h-full stroke-1"></i>
+          </div>
+        </div>
+
+        <!-- Bento Grid Statistics -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-forest-800/80 border border-forest-700/60 p-5 rounded-xl flex items-center justify-between">
+            <div>
+              <p class="text-[10px] text-forest-300 font-bold uppercase tracking-wider font-mono">Arsip Laporan Konseling</p>
+              <h3 id="stat-reports" class="text-2xl font-heading font-black text-white mt-1">0 Berkas</h3>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-forest-700/50 flex items-center justify-center text-forest-400">
+              <i data-lucide="file-text" class="w-5 h-5"></i>
+            </div>
+          </div>
+
+          <div class="bg-forest-800/80 border border-forest-700/60 p-5 rounded-xl flex items-center justify-between">
+            <div>
+              <p class="text-[10px] text-forest-300 font-bold uppercase tracking-wider font-mono">Draf Kertas Kerja RPL</p>
+              <h3 id="stat-rpls" class="text-2xl font-heading font-black text-white mt-1">0 Dokumen</h3>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-forest-700/50 flex items-center justify-center text-forest-400">
+              <i data-lucide="file-check" class="w-5 h-5"></i>
+            </div>
+          </div>
+
+          <div class="bg-forest-800/80 border border-forest-700/60 p-5 rounded-xl flex items-center justify-between">
+            <div>
+              <p class="text-[10px] text-forest-300 font-bold uppercase tracking-wider font-mono">Pelayanan Kalender BK</p>
+              <h3 id="stat-events" class="text-2xl font-heading font-black text-white mt-1">0 Kegiatan</h3>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-forest-700/50 flex items-center justify-center text-forest-300">
+              <i data-lucide="calendar" class="w-5 h-5"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Access Table -->
+        <div class="bg-forest-800/50 border border-forest-700/50 p-6 rounded-2xl">
+          <h3 class="text-sm font-extrabold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+            <i data-lucide="clock" class="w-4 h-4 text-forest-500"></i>
+            <span>Aset Laporan Terbaru Anda</span>
+          </h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-forest-200">
+              <thead>
+                <tr class="border-b border-forest-700/60 text-[10px] uppercase font-bold text-forest-300">
+                  <th class="pb-3 w-1/3">Detail Konseli / Agenda</th>
+                  <th class="pb-3">Tipe Berkas / Format</th>
+                  <th class="pb-3 text-right">Aksi Cepat</th>
+                </tr>
+              </thead>
+              <tbody id="dashboard-recent-rows">
+                <!-- Javascript will render rows here -->
+                <tr>
+                  <td colspan="3" class="py-8 text-center text-forest-400">Belum ada draf berkas yang tersimpan.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB: WRITER (EDITOR & PRINT PREVIEW) ==================== -->
+      <section id="tab-content-writer" class="tab-pane hidden flex flex-col h-full overflow-hidden max-w-[1300px] mx-auto">
+        <div class="flex-1 flex flex-col lg:flex-row gap-6 overflow-hidden min-h-0">
+          
+          <!-- Column 1: Workspace Inputs -->
+          <div class="w-full lg:w-[420px] bg-forest-850/80 p-5 border border-forest-750 rounded-2xl flex flex-col overflow-y-auto shrink-0 space-y-5">
+            <div>
+              <span class="text-[10px] uppercase font-bold text-forest-300 font-mono tracking-wider">Format Lulus Administrasi</span>
+              <h3 class="font-extrabold text-[#E1E8E1] tracking-tight">Kustomisasi Draf & Atribut Berkas</h3>
+            </div>
+
+            <!-- Selector Tipe Berkas -->
+            <div class="space-y-1.5">
+              <label class="block text-[10px] uppercase font-bold text-forest-300">Format Layanan Dokumen</label>
+              <select id="doc-type-selector" onchange="onDocumentTypeChange()" class="w-full bg-forest-900 border border-forest-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-forest-500">
+                <option value="report">Laporan Formal Konseling Individu</option>
+                <option value="rpl">Rencana Pelaksanaan Layanan (RPL) BK</option>
+              </select>
+            </div>
+
+            <!-- Dynamic Form Fields -->
+            <div id="dynamic-form-fields" class="space-y-3.5">
+              <!-- Rendered via JS depending on document type selector -->
+            </div>
+
+            <!-- Kop Surat Controls -->
+            <div class="border-t border-forest-700 pt-3 space-y-2">
+              <label class="flex items-center justify-between text-xs font-bold text-forest-200 cursor-pointer">
+                <span>Tampilkan KOP Surat Resmi</span>
+                <input type="checkbox" id="toggle-kop" checked onchange="updateLivePreview()" class="rounded border-forest-600 bg-forest-900 text-forest-500 focus:ring-forest-500 focus:ring-offset-forest-800">
+              </label>
+              <label class="flex items-center justify-between text-xs font-bold text-forest-200 cursor-pointer">
+                <span>Kolom Tanda Tangan BK</span>
+                <input type="checkbox" id="toggle-signatures" checked onchange="updateLivePreview()" class="rounded border-forest-600 bg-forest-900 text-forest-500 focus:ring-forest-500 focus:ring-offset-forest-800">
+              </label>
+            </div>
+
+            <!-- Core Paragraph Text Editor -->
+            <div class="flex-1 flex flex-col pt-2 min-h-[160px]">
+              <label class="block text-[10px] uppercase font-bold text-forest-300 mb-1">Draf Isi Catatan (Gunakan Markdown dasar)</label>
+              <textarea id="markdown-textarea" oninput="updateLivePreview()" class="flex-1 w-full bg-forest-900 border border-forest-700 rounded-xl p-3 text-xs text-zinc-100 font-mono focus:outline-0 focus:ring-1 focus:ring-forest-500 resize-none outline-none leading-relaxed" placeholder="Tulis rincian atau draf disini..."></textarea>
+            </div>
+
+            <!-- Save Document Button -->
+            <button onclick="saveActiveDocument()" class="w-full py-3 bg-forest-500 hover:bg-forest-400 text-forest-800 font-black text-xs uppercase tracking-wider rounded-xl transition duration-150 flex items-center justify-center gap-2">
+              <i data-lucide="save" class="w-4 h-4"></i>
+              <span>Simpan Berkas ke Log Lokal</span>
+            </button>
+          </div>
+
+          <!-- Column 2: Printable emulation page -->
+          <div class="flex-1 flex flex-col min-h-0 bg-forest-950/40 border border-forest-750 rounded-2xl p-4 overflow-y-auto items-center">
+            <div class="w-full max-w-[800px] flex justify-between items-center mb-4 text-xs">
+              <span class="text-[10px] text-forest-300 uppercase tracking-widest font-mono font-bold flex items-center gap-1.5">
+                <i data-lucide="eye" class="w-3.5 h-3.5 text-forest-500"></i>
+                Pratinjau Kertas A4
+              </span>
+              <button onclick="printFormalDocument()" class="bg-forest-600 hover:bg-forest-500 text-white px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 shadow">
+                <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                <span>Cetak / Ekspor PDF</span>
+              </button>
+            </div>
+
+            <!-- Page emulation boundaries -->
+            <div id="emulated-document" class="print-area paper-page bg-[#181D18] text-zinc-200 border border-forest-700 w-full max-w-[800px] p-8 min-h-[1050px] transition-all rounded-xl text-xs md:text-sm shadow-xl flex flex-col justify-between">
+              
+              <div class="space-y-4">
+                <!-- Kop Surat Header Section -->
+                <div id="preview-kop" class="border-b-4 border-double border-forest-600/60 pb-3 mb-4 text-center flex items-center gap-3">
+                  <div class="w-14 h-14 rounded-full border-2 border-forest-500 bg-forest-800 flex items-center justify-center text-forest-400 shrink-0">
+                    <i data-lucide="award" class="w-8 h-8"></i>
+                  </div>
+                  <div class="flex-1 text-center pr-14 select-none">
+                    <h5 class="font-extrabold uppercase text-[10px] text-forest-300 leading-tight">PEMERINTAH PROVINSI REPUBLIK INDONESIA</h5>
+                    <h4 class="font-black uppercase text-xs text-white leading-tight mt-0.5">DINAS PENDIDIKAN DAN KEBUDAYAAN</h4>
+                    <p class="font-black uppercase text-sm text-forest-400 leading-tight mt-0.5" id="preview-school-heading">NAMA SEKOLAH RESMI GURU BK</p>
+                    <p class="text-[9px] text-zinc-400 italic mt-1 leading-snug" id="preview-school-address">Alamat Pusat Instansi Pendidikan No. 24, Indonesia</p>
+                  </div>
+                </div>
+
+                <!-- Document Identity Title -->
+                <div class="text-center py-2">
+                  <h3 id="preview-title" class="font-bold uppercase tracking-widest text-center border-b-2 border-forest-700 inline-block pb-0.5 text-white">LAPORAN FORMAL BIMBINGAN KONSELING</h3>
+                  <p class="text-[10px] mt-2 font-mono text-forest-300" id="preview-doc-number">Nomor Administrasi: BK/SKLH/REKAP/2026</p>
+                </div>
+
+                <!-- Interactive Metdata Details Grid -->
+                <div id="preview-meta-panel" class="bg-forest-800/40 border border-forest-700/50 rounded-xl p-4 text-[11px] leading-relaxed">
+                  <!-- Injected via javascript -->
+                </div>
+
+                <!-- Markdown Content Paragraph Render -->
+                <div id="preview-content-area" class="text-zinc-100 leading-relaxed font-serif text-sm py-2 max-w-none space-y-2 whitespace-pre-wrap">
+                  Tulis berkas draf laporan di editor sisi kiri untuk me-render data ke kertas formal ini...
+                </div>
+              </div>
+
+              <!-- Signatures Row in Bottom Kertas -->
+              <div id="preview-signatures-panel" class="grid grid-cols-2 gap-4 border-t border-forest-750 pt-5 mt-8 text-center text-[11px] select-none text-zinc-300">
+                <div class="flex flex-col items-center">
+                  <span class="font-bold" id="preview-sig-principal-title">Kepala Instansi Sekolah</span>
+                  <div class="h-16 flex items-center justify-center font-mono italic text-[9px] text-zinc-500">[Tanda Tangan Dinas]</div>
+                  <span class="font-extrabold text-white underline" id="preview-sig-principal-name">Nama Kepala Sekolah, M.Pd.</span>
+                  <span class="text-[10px] text-zinc-400" id="preview-sig-principal-nip">NIP. 1928374829102938102</span>
+                </div>
+                <div class="flex flex-col items-center">
+                  <span class="font-bold">Konselor / Wali Kelas BK</span>
+                  <div class="h-16 flex items-center justify-center font-mono italic text-[9px] text-zinc-500">[Tanda Tangan Konselor]</div>
+                  <span class="font-extrabold text-white underline" id="preview-sig-counselor-name">Nama Guru BK Handal, S.Psi.</span>
+                  <span class="text-[10px] text-zinc-400" id="preview-sig-counselor-nip">NIP. 198273917283910293</span>
+                </div>
+              </div>
+              
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ==================== TAB: ARCHIVES ==================== -->
+      <section id="tab-content-archives" class="tab-pane hidden space-y-6 max-w-5xl mx-auto">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-xl font-black text-white uppercase tracking-tight">Arsip Digital & Dokumen Konseling</h2>
+            <p class="text-xs text-forest-300">Lacak rincian berkas, draf laporan, dan RPL yang sudah berhasil dicatat di penyimpanan lokal.</p>
+          </div>
+          <button onclick="clearAllData()" class="px-3.5 py-1.5 bg-red-950/40 hover:bg-red-900/30 border border-red-900/40 text-red-300 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            <span>Kosongkan Seluruh Arsip</span>
+          </button>
+        </div>
+
+        <div class="bg-forest-800/30 border border-forest-700/50 rounded-2xl p-6 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead>
+                <tr class="border-b border-forest-700 text-[10px] uppercase font-bold text-forest-400">
+                  <th class="pb-3 w-1/12">No</th>
+                  <th class="pb-3 w-4/12">Judul Dokumen & Subjek</th>
+                  <th class="pb-3 w-3/12">Format Pelayanan</th>
+                  <th class="pb-3 w-2/12">Tanggal Dibuat</th>
+                  <th class="pb-3 text-right">Opsi Pengelolaan</th>
+                </tr>
+              </thead>
+              <tbody id="archives-table-body">
+                <!-- Injected via Javascript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB: CALENDAR ==================== -->
+      <section id="tab-content-calendar" class="tab-pane hidden space-y-6 max-w-5xl mx-auto">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-xl font-black text-white uppercase tracking-tight">Kalender Pelayanan BK</h2>
+            <p class="text-xs text-forest-300">Pantau agenda bimbingan klasikal, bimbingan kelompok, atau konseling terjadwal hari ini.</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Calendar Form Input -->
+          <div class="bg-forest-800/60 border border-forest-700 p-5 rounded-2xl space-y-4">
+            <h3 class="text-xs font-bold text-white uppercase tracking-wider border-b border-forest-700 pb-2">Buat Jadwal Baru</h3>
+            
+            <div class="space-y-1.5">
+              <label class="block text-[10px] uppercase font-bold text-forest-300">Nama Guru / BK Pelaksana</label>
+              <input type="text" id="event-counselor" class="w-full bg-forest-900 border border-forest-700 rounded-xl p-2 text-xs text-white focus:outline-none" placeholder="Isi nama pelaksana...">
+            </div>
+
+            <div class="space-y-1.5">
+              <label class="block text-[10px] uppercase font-bold text-forest-300">Judul Agenda / Kelas</label>
+              <input type="text" id="event-title" class="w-full bg-forest-900 border border-forest-700 rounded-xl p-2 text-xs text-white focus:outline-none" placeholder="Isi subjek bimbingan...">
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div class="space-y-1.5">
+                <label class="block text-[10px] uppercase font-bold text-forest-300">Tanggal Pelayanan</label>
+                <input type="date" id="event-date" class="w-full bg-forest-900 border border-forest-700 rounded-xl p-2 text-xs text-white focus:outline-none">
+              </div>
+              <div class="space-y-1.5">
+                <label class="block text-[10px] uppercase font-bold text-forest-300">Waktu (Jam)</label>
+                <input type="time" id="event-time" class="w-full bg-forest-900 border border-forest-700 rounded-xl p-2 text-xs text-white focus:outline-none">
+              </div>
+            </div>
+
+            <div class="space-y-1.5">
+              <label class="block text-[10px] uppercase font-bold text-forest-300">Metode / Media</label>
+              <select id="event-media" class="w-full bg-forest-900 border border-forest-700 rounded-xl p-2 text-xs text-white focus:outline-none">
+                <option value="Darat (Tatap Muka)">Tatap Muka / Ruang Kelas</option>
+                <option value="WhatsApp / Chat Virtual">WhatsApp / Chat Virtual</option>
+                <option value="Google Meet">Google Meet</option>
+              </select>
+            </div>
+
+            <button onclick="createNewAgendaEvent()" class="w-full py-2.5 bg-forest-500 hover:bg-forest-400 text-forest-800 font-extrabold text-xs uppercase rounded-xl transition duration-150">
+              Tambah Agenda Kerja
+            </button>
+          </div>
+
+          <!-- Calendar Display Table List -->
+          <div class="md:col-span-2 bg-forest-800/30 border border-forest-700 p-6 rounded-2xl flex flex-col justify-between">
+            <div class="space-y-4">
+              <h3 class="text-xs font-bold text-white uppercase tracking-wider border-b border-forest-700 pb-2 flex items-center gap-2">
+                <i data-lucide="list-todo" class="w-4 h-4 text-forest-400"></i>
+                Lihat Urutan Acara Terjadwal
+              </h3>
+              <div class="space-y-3" id="calendar-events-container">
+                <!-- Dynamic cards injected via JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ==================== LOG LOGIC CORE SCRIPT ==================== -->
+  <script>
+    // Global Storage Instances
+    let currentTab = "dashboard";
+    let activeDocId = null;
+
+    // Demo Initial Data Setup
+    const initialReports = [
+      {
+        id: "rekap-dem-01",
+        type: "report",
+        studentName: "Fadli Ramadhan",
+        studentClass: "X-MIPA-3",
+        gender: "Laki-laki",
+        serviceCategory: "Belajar (Kesulitan Konsentrasi Pasca Ujian)",
+        provinceName: "Pemerintah Provinsi Banten",
+        schoolName: "SMA Negeri 7 Serang Kota",
+        schoolAddress: "Jl. Pendidikan Luhur No. 12, Serang, Banten",
+        docNumber: "BK/SMAN7/LOG/2026/089",
+        principalName: "Drs. Hermawan Siregar, M.Pd.",
+        principalNip: "197612042001121008",
+        counselorName: "Sri Wardani, S.Psi.",
+        counselorNip: "198305112009032014",
+        content: `**A. LATAR BELAKANG**
+Murid atas nama Fadli Ramadhan dilaporkan oleh wali kelas X-MIPA-3 mengalami kemerosotan nilai yang drastis pasca-ujian tengah semester. Konseli tampak lesu dan kurang aktif selama jam bimbingan klasikal.
+
+**B. ANALISIS DAN SOLUSI**
+Setelah dilaksanakan konseling pribadi satu kali, didapatkan data bahwa konseli mengalami kelelahan belajar (burnout) karena target pribadi yang dipatok terlalu berlebihan tanpa didampingi manajemen waktu yang seimbang.
+
+**C. REKOMENDASI DAN GAYA TANGAN**
+1. Konseli disarankan melakukan teknik micro-break pomodoro saat belajar mandiri di rumah.
+2. Orang tua dihubungi untuk memberikan dukungan emosional tanpa membebankan target numerik akademik yang kaku.`
+      },
+      {
+        id: "rpl-dem-02",
+        type: "rpl",
+        topic: "Pengenalan Eksplorasi Karir Pascaperguruan Tinggi",
+        classGrade: "XII-IPS",
+        serviceType: "Bimbingan Klasikal",
+        duration: "2 JP (2 x 45 Menit)",
+        focusPoints: "Mengenal minat vokasional, peta kuliah kedinasan vs universitas swasta",
+        provinceName: "Pemerintah Provinsi Banten",
+        schoolName: "SMA Negeri 7 Serang Kota",
+        schoolAddress: "Jl. Pendidikan Luhur No. 12, Serang, Banten",
+        docNumber: "RPL/BK/SMAN7/XII/2026",
+        principalName: "Drs. Hermawan Siregar, M.Pd.",
+        principalNip: "197612042001121008",
+        counselorName: "Sri Wardani, S.Psi.",
+        counselorNip: "198305112009032014",
+        content: `**A. TUJUAN PELAYANAN**
+Peserta didik kelas XII-IPS mampu menganalisis potensi bakat intelektual pribadi mereka serta memilih jalur masuk perguruan tinggi yang sejalan dengan peta kompetensi pasar kerja modern abad ke-21.
+
+**B. TAHAPAN KEGIATAN**
+1. **Langkah Awal (10 menit):** Guru BK memberikan ice breaking kreatif berupa tebak profesi masa depan.
+2. **Langkah Inti (65 menit):** Siswa mengisi asesmen mini berupa tes RIASEC sederhana dan mempresentasikan hasilnya berkelompok.
+3. **Langkah Akhir (15 menit):** Konselor memberikan evaluasi umum.`
+      }
+    ];
+
+    const initialCalendarEvents = [
+      {
+        id: "ev-01",
+        title: "Bimbingan Karir Klasikal XII-MIPA",
+        counselor: "Sri Wardani, S.Psi.",
+        date: "2026-06-18",
+        time: "08:00",
+        media: "Darat (Tatap Muka)"
+      },
+      {
+        id: "ev-02",
+        title: "Konseling Khusus Murid Bermasalah Absensi",
+        counselor: "Ahmad Sujono, S.Psi.",
+        date: "2026-06-19",
+        time: "10:30",
+        media: "WhatsApp / Chat Virtual"
+      }
+    ];
+
+    // Read stored items or generate demo
+    let reports = JSON.parse(localStorage.getItem("bk_reports_local")) || initialReports;
+    let events = JSON.parse(localStorage.getItem("bk_events_local")) || initialCalendarEvents;
+
+    // Save state back helper
+    function saveAllToLocalStorage() {
+      localStorage.setItem("bk_reports_local", JSON.stringify(reports));
+      localStorage.setItem("bk_events_local", JSON.stringify(events));
+      renderLocalStats();
+      renderRecentActivityTable();
+    }
+
+    // App Initialization Hook
+    window.addEventListener("DOMContentLoaded", () => {
+      lucide.createIcons();
+      switchTab("dashboard");
+      renderLocalStats();
+      renderRecentActivityTable();
+      onDocumentTypeChange(); // Build first fields list
+    });
+
+    // Navigation state manager
+    function switchTab(tabId) {
+      currentTab = tabId;
+      document.querySelectorAll(".tab-pane").forEach(pane => pane.classList.add("hidden"));
+      const targetPane = document.getElementById(`tab-content-${tabId}`);
+      if (targetPane) targetPane.classList.remove("hidden");
+
+      // Set active nav bar indicator color
+      document.querySelectorAll(".nav-btn").forEach(btn => {
+        btn.classList.remove("bg-forest-700/80", "text-white");
+        btn.classList.add("text-forest-300");
+      });
+      const activeNav = document.getElementById(`nav-${tabId}`);
+      if (activeNav) {
+        activeNav.classList.add("bg-forest-700/80", "text-white");
+        activeNav.classList.remove("text-forest-300");
+      }
+
+      // Sync header top text
+      const mapNames = {
+        "dashboard": "Dashboard Guru BK",
+        "writer": "Workspace & Alat Cetak",
+        "archives": "Database Simpanan Berkas",
+        "calendar": "Kalender Agenda Kerja"
+      };
+      document.getElementById("tab-indicator").textContent = mapNames[tabId] || tabId;
+
+      // Trigger lazy renders
+      if (tabId === "archives") renderArchivesTable();
+      if (tabId === "calendar") renderCalendarSchedule();
+      if (tabId === "dashboard") {
+        renderLocalStats();
+        renderRecentActivityTable();
+      }
+    }
+
+    // Clear DB
+    function clearAllData() {
+      if (confirm("Apakah Anda yakin ingin menghapus seluruh data yang tersimpan di browser ini? Tindakan ini permanen.")) {
+        reports = [];
+        events = [];
+        saveAllToLocalStorage();
+        renderArchivesTable();
+        alert("Semua data berhasil dibersihkan.");
+      }
+    }
+
+    // Export JSON fallback
+    function exportFullDataJSON() {
+      const payload = { reports, events, exportedAt: new Date().toISOString() };
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", "cadangan_bk_auto_admin.json");
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    // Stats counting
+    function renderLocalStats() {
+      document.getElementById("stat-reports").textContent = reports.filter(r => r.type === "report").length + " Berkas";
+      document.getElementById("stat-rpls").textContent = reports.filter(r => r.type === "rpl").length + " Dokumen";
+      document.getElementById("stat-events").textContent = events.length + " Kegiatan";
+    }
+
+    // Render Recent Logs Table
+    function renderRecentActivityTable() {
+      const container = document.getElementById("dashboard-recent-rows");
+      if (reports.length === 0) {
+        container.innerHTML = `<tr><td colspan="3" class="py-8 text-center text-forest-400">Belum ada draf berkas yang tersimpan.</td></tr>`;
+        return;
+      }
+
+      container.innerHTML = reports.slice(0, 5).map(item => {
+        const title = item.type === "report" ? `LAPORAN: ${item.studentName} (${item.studentClass})` : `RPL: ${item.topic}`;
+        const service = item.type === "report" ? `Layanan Belajar / Karir` : `Klasikal [${item.duration}]`;
+        return `
+          <tr class="border-b border-forest-750 hover:bg-forest-800/20">
+            <td class="py-3.5 font-bold text-white max-w-[200px] truncate">${title}</td>
+            <td class="py-3.5 text-forest-300 font-medium">${service}</td>
+            <td class="py-3.5 text-right">
+              <button onclick="loadDocumentToWriter('${item.id}')" class="px-2.5 py-1 bg-forest-700 hover:bg-forest-650 border border-forest-600 rounded text-[11px] font-bold text-forest-200 hover:text-white transition cursor-pointer">
+                Tinjau & Edit
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Document Writer Setup
+    const inputFieldsConfig = {
+      report: [
+        { id: "input-studentName", label: "Nama Murid / Konseli", placeholder: "Contoh: Fadli Ramadhan", value: "Fadli Ramadhan" },
+        { id: "input-studentClass", label: "Kelas Siswa", placeholder: "Contoh: X-MIPA-3", value: "X-MIPA-3" },
+        { id: "input-gender", label: "Jenis Kelamin", placeholder: "Laki-laki / Perempuan", value: "Laki-laki" },
+        { id: "input-serviceCategory", label: "Kategori Keluhan Pelayanan", placeholder: "Contoh: Belajar (Kesulitan Belajar Pasca Sakit)", value: "Akademik Belajar" },
+        { id: "input-provinceName", label: "Pemerintah Provinsi / Kota", placeholder: "Pemerintah Provinsi Banten", value: "Pemerintah Provinsi DKI Jakarta" },
+        { id: "input-schoolName", label: "Nama Sekolah Resmi", placeholder: "SMA Negeri 7 Serang Kota", value: "SMA Negeri Metropolitan Jakarta" },
+        { id: "input-schoolAddress", label: "Alamat Sekolah Lengkap", placeholder: "Jl. Pendidikan Luhur No. 12, Serang, Banten", value: "Jl. Lapangan Olahraga No. 101, DKI Jakarta" },
+        { id: "input-docNumber", label: "Nomor Administrasi Surat", placeholder: "BK/SMAN7/LOG/2026/089", value: "BK/SMA-METRO/REKAP/2026" },
+        { id: "input-principalName", label: "Nama Kepala Sekolah", placeholder: "Drs. Hermawan Siregar, M.Pd.", value: "Drs. Bambang Hidayat, M.Si." },
+        { id: "input-principalNip", label: "NIP Kepala Sekolah", placeholder: "197612042001121008", value: "197812042001121008" },
+        { id: "input-counselorName", label: "Nama Guru Pembimbing BK", placeholder: "Sri Wardani, S.Psi.", value: "Sri Wardani, S.Psi." },
+        { id: "input-counselorNip", label: "NIP Guru BK", placeholder: "198305112009032014", value: "198305112009032014" }
+      ],
+      rpl: [
+        { id: "input-topic", label: "Tema Klasikal / Karir", placeholder: "Eksplorasi Karir Abad Modern", value: "Metode Efektif Mengatasi Stress Menjelang Ujian" },
+        { id: "input-classGrade", label: "Wali Kelas / Sasaran Tingkatan", placeholder: "Kelas X-MIPA", value: "Semua Kelas XI SMA" },
+        { id: "input-serviceType", label: "Format Layanan BK", placeholder: "Bimbingan Klasikal", value: "Layanan Klasikal Karir" },
+        { id: "input-duration", label: "Durasi Waktu Pertemuan", placeholder: "2 JP (2 x 45 menit)", value: "2 JP (90 Menit)" },
+        { id: "input-focusPoints", label: "Fokus / Sasaran Utama Siswa", placeholder: "Mengenal RIASEC...", value: "Siswa sanggup mengontrol denyut emosi negatif saat jenuh" },
+        { id: "input-provinceName", label: "Pemerintah Provinsi / Kota", placeholder: "Pemerintah Provinsi Banten", value: "Pemerintah Provinsi DKI Jakarta" },
+        { id: "input-schoolName", label: "Nama Sekolah Resmi", placeholder: "SMA Negeri 7 Serang Kota", value: "SMA Negeri Metropolitan Jakarta" },
+        { id: "input-schoolAddress", label: "Alamat Sekolah Lengkap", placeholder: "Jl. Pendidikan Luhur No. 12, Serang, Banten", value: "Jl. Lapangan Olahraga No. 101, DKI Jakarta" },
+        { id: "input-docNumber", label: "Nomor Dokumen", placeholder: "RPL/BK/XII/2026", value: "RPL/SMA-METRO/BK/XI/2026" },
+        { id: "input-principalName", label: "Nama Kepala Sekolah", placeholder: "Drs. Hermawan Siregar, S.Pd.", value: "Drs. Bambang Hidayat, M.Si." },
+        { id: "input-principalNip", label: "NIP Kepala Sekolah", placeholder: "NIP.", value: "197812042001121008" },
+        { id: "input-counselorName", label: "Nama Guru BK", placeholder: "Sri Wardani, S.Psi.", value: "Sri Wardani, S.Psi." },
+        { id: "input-counselorNip", label: "NIP Guru BK", placeholder: "NIP.", value: "198305112009032014" }
+      ]
+    };
+
+    function onDocumentTypeChange() {
+      const type = document.getElementById("doc-type-selector").value;
+      const container = document.getElementById("dynamic-form-fields");
+      
+      const fields = inputFieldsConfig[type];
+      container.innerHTML = fields.map(field => `
+        <div class="space-y-1">
+          <label class="block text-[10px] uppercase font-semibold text-forest-300">${field.label}</label>
+          <input type="text" id="${field.id}" oninput="updateLivePreview()" value="${field.value}" class="w-full bg-forest-900 border border-forest-700 rounded-lg p-2 text-xs text-white focus:outline-none" placeholder="${field.placeholder}">
+        </div>
+      `).join('');
+
+      // Populate default content text if textarea is empty
+      const textarea = document.getElementById("markdown-textarea");
+      if (!textarea.value) {
+        if (type === "report") {
+          textarea.value = `**A. LATAR BELAKANG**\nKonseli dilaporkan oleh guru mata pelajaran karena sering melamun.\n\n**B. ANALISIS DAN TINDAKAN**\nSetelah dilakukan tatap muka, konseli mengalami kendala pembagian fokus antara ekskul dan hafalan tugas.\n\n**C. KESIMPULAN / REKOMENDASI**\nMemberikan sesi konsultasi bulanan dan pematangan jadwal terpadu.`;
+        } else {
+          textarea.value = `**A. TUJUAN**\nSiswa sanggup mengoreksi rasa malas.\n\n**B. TAHAPAN**\n- Orientasi: Ceramah visual.\n- Aksi: Dinamika kelompok.\n\n**C. TINDAK LANJUT**\nEvaluasi berkala pasca-konseling.`;
+        }
+      }
+
+      updateLivePreview();
+    }
+
+    // Update A4 Sheet Real-time
+    function updateLivePreview() {
+      const type = document.getElementById("doc-type-selector").value;
+
+      // Kop variables
+      const showKop = document.getElementById("toggle-kop").checked;
+      const previewKop = document.getElementById("preview-kop");
+      if (showKop) {
+        previewKop.style.display = "flex";
+        const schoolNameVal = document.getElementById("input-schoolName") ? document.getElementById("input-schoolName").value : "Instansi Sekolah";
+        const schoolAddressVal = document.getElementById("input-schoolAddress") ? document.getElementById("input-schoolAddress").value : "Alamat Pusat";
+        document.getElementById("preview-school-heading").textContent = schoolNameVal.toUpperCase();
+        document.getElementById("preview-school-address").textContent = schoolAddressVal;
+      } else {
+        previewKop.style.display = "none";
+      }
+
+      // Title & Doc Number
+      const docNumVal = document.getElementById("input-docNumber") ? document.getElementById("input-docNumber").value : "NOMOR-BK/X/2026";
+      document.getElementById("preview-doc-number").textContent = "Nomor Administrasi: " + docNumVal;
+
+      if (type === "report") {
+        document.getElementById("preview-title").textContent = "LAPORAN FORMAL BIMBINGAN KONSELING";
+        
+        const name = document.getElementById("input-studentName") ? document.getElementById("input-studentName").value : "-";
+        const cls = document.getElementById("input-studentClass") ? document.getElementById("input-studentClass").value : "-";
+        const sex = document.getElementById("input-gender") ? document.getElementById("input-gender").value : "-";
+        const category = document.getElementById("input-serviceCategory") ? document.getElementById("input-serviceCategory").value : "-";
+
+        document.getElementById("preview-meta-panel").innerHTML = `
+          <table class="w-full text-left">
+            <tbody>
+              <tr><td class="py-0.5 font-bold text-forest-400 w-1/4">Nama Konseli</td><td class="w-2">:</td><td class="font-bold text-white">${name}</td></tr>
+              <tr><td class="py-0.5 font-bold text-forest-400">Kelas / Gender</td><td>:</td><td>${cls} / ${sex}</td></tr>
+              <tr><td class="py-0.5 font-bold text-forest-400">Format Layanan</td><td>:</td><td class="text-indigo-300 font-semibold">${category}</td></tr>
+            </tbody>
+          </table>
+        `;
+      } else {
+        document.getElementById("preview-title").textContent = "RENCANA PELAKSANAAN LAYANAN (RPL) BK";
+        
+        const topic = document.getElementById("input-topic") ? document.getElementById("input-topic").value : "-";
+        const grade = document.getElementById("input-classGrade") ? document.getElementById("input-classGrade").value : "-";
+        const duration = document.getElementById("input-duration") ? document.getElementById("input-duration").value : "-";
+        const focus = document.getElementById("input-focusPoints") ? document.getElementById("input-focusPoints").value : "-";
+
+        document.getElementById("preview-meta-panel").innerHTML = `
+          <table class="w-full text-left">
+            <tbody>
+              <tr><td class="py-0.5 font-bold text-forest-400 w-1/4">Tema Klasikal</td><td class="w-2">:</td><td class="font-bold text-white">${topic}</td></tr>
+              <tr><td class="py-0.5 font-bold text-forest-400">Sasaran / Durasi</td><td>:</td><td>${grade} / ${duration}</td></tr>
+              <tr><td class="py-0.5 font-bold text-forest-400">Fokus Pokok</td><td>:</td><td class="text-emerald-300 font-semibold">${focus}</td></tr>
+            </tbody>
+          </table>
+        `;
+      }
+
+      // Markdown Text Rendering Simple Parser
+      const mdText = document.getElementById("markdown-textarea").value;
+      const htmlText = mdText
+        .split("\n\n")
+        .map(p => {
+          if (p.startsWith("**") && p.endsWith("**")) {
+            return `<h4 class="font-extrabold text-white uppercase text-xs mt-3 mb-1 border-b border-forest-700/65 pb-0.5">${p.replace(/\*\*/g, '')}</h4>`;
+          }
+          if (p.startsWith("**")) {
+            // Find bold title line at start
+            const lines = p.split("\n");
+            lines[0] = `<strong class="text-white block mt-2">${lines[0].replace(/\*\*/g, '')}</strong>`;
+            return `<div class="mb-2 text-justify">${lines.join("<br/>")}</div>`;
+          }
+          return `<p class="mb-2 text-justify select-text">${p.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>`;
+        })
+        .join('');
+
+      document.getElementById("preview-content-area").innerHTML = htmlText;
+
+      // Signatures Panel Toggle
+      const showSignatures = document.getElementById("toggle-signatures").checked;
+      const previewSigs = document.getElementById("preview-signatures-panel");
+      if (showSignatures) {
+        previewSigs.style.display = "grid";
+        
+        const prName = document.getElementById("input-principalName") ? document.getElementById("input-principalName").value : "Kepala Sekolah";
+        const prNip = document.getElementById("input-principalNip") ? document.getElementById("input-principalNip").value : "-";
+        const coName = document.getElementById("input-counselorName") ? document.getElementById("input-counselorName").value : "Guru BK";
+        const coNip = document.getElementById("input-counselorNip") ? document.getElementById("input-counselorNip").value : "-";
+
+        document.getElementById("preview-sig-principal-name").textContent = prName;
+        document.getElementById("preview-sig-principal-nip").textContent = "NIP. " + prNip;
+        document.getElementById("preview-sig-counselor-name").textContent = coName;
+        document.getElementById("preview-sig-counselor-nip").textContent = "NIP. " + coNip;
+      } else {
+        previewSigs.style.display = "none";
+      }
+    }
+
+    // Save active doc
+    function saveActiveDocument() {
+      const type = document.getElementById("doc-type-selector").value;
+      const newDoc = {
+        id: activeDocId || "bk-doc-" + Date.now(),
+        type: type,
+        content: document.getElementById("markdown-textarea").value,
+        provinceName: document.getElementById("input-provinceName") ? document.getElementById("input-provinceName").value : "",
+        schoolName: document.getElementById("input-schoolName") ? document.getElementById("input-schoolName").value : "",
+        schoolAddress: document.getElementById("input-schoolAddress") ? document.getElementById("input-schoolAddress").value : "",
+        docNumber: document.getElementById("input-docNumber") ? document.getElementById("input-docNumber").value : "",
+        principalName: document.getElementById("input-principalName") ? document.getElementById("input-principalName").value : "",
+        principalNip: document.getElementById("input-principalNip") ? document.getElementById("input-principalNip").value : "",
+        counselorName: document.getElementById("input-counselorName") ? document.getElementById("input-counselorName").value : "",
+        counselorNip: document.getElementById("input-counselorNip") ? document.getElementById("input-counselorNip").value : ""
+      };
+
+      if (type === "report") {
+        newDoc.studentName = document.getElementById("input-studentName").value;
+        newDoc.studentClass = document.getElementById("input-studentClass").value;
+        newDoc.gender = document.getElementById("input-gender").value;
+        newDoc.serviceCategory = document.getElementById("input-serviceCategory").value;
+      } else {
+        newDoc.topic = document.getElementById("input-topic").value;
+        newDoc.classGrade = document.getElementById("input-classGrade").value;
+        newDoc.serviceType = document.getElementById("input-serviceType").value;
+        newDoc.duration = document.getElementById("input-duration").value;
+        newDoc.focusPoints = document.getElementById("input-focusPoints").value;
+      }
+
+      // Overwrite or create new
+      const index = reports.findIndex(r => r.id === newDoc.id);
+      if (index !== -1) {
+        reports[index] = newDoc;
+      } else {
+        reports.unshift(newDoc);
+      }
+
+      activeDocId = newDoc.id;
+      saveAllToLocalStorage();
+      alert("Berkas draf berhasil disimpan ke penyimpanan lokal browser.");
+    }
+
+    // Edit Document Callback
+    function loadDocumentToWriter(docId) {
+      const found = reports.find(r => r.id === docId);
+      if (!found) return;
+
+      activeDocId = found.id;
+      switchTab("writer");
+
+      // Set type
+      document.getElementById("doc-type-selector").value = found.type;
+      
+      // Re-create the form input DOM with specific document attributes
+      const container = document.getElementById("dynamic-form-fields");
+      const fields = inputFieldsConfig[found.type];
+      
+      container.innerHTML = fields.map(field => {
+        const storedValue = found[field.id.replace("input-", "")];
+        return `
+          <div class="space-y-1">
+            <label class="block text-[10px] uppercase font-semibold text-forest-300">${field.label}</label>
+            <input type="text" id="${field.id}" oninput="updateLivePreview()" value="${storedValue !== undefined ? storedValue : field.value}" class="w-full bg-forest-900 border border-forest-700 rounded-lg p-2 text-xs text-white focus:outline-none" placeholder="${field.placeholder}">
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById("markdown-textarea").value = found.content;
+      updateLivePreview();
+    }
+
+    // Delete Document Callback
+    function deleteDocument(docId) {
+      if (confirm("Apakah Anda yakin ingin menghapus berkas arsip ini?")) {
+        reports = reports.filter(r => r.id !== docId);
+        if (activeDocId === docId) activeDocId = null;
+        saveAllToLocalStorage();
+        renderArchivesTable();
+      }
+    }
+
+    // Print emulated paper
+    function printFormalDocument() {
+      window.print();
+    }
+
+    // Render Archives Tab List
+    function renderArchivesTable() {
+      const parent = document.getElementById("archives-table-body");
+      if (reports.length === 0) {
+        parent.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-forest-400 font-medium">Belum ada draf berkas yang tersimpan di dalam arsip browser Anda.</td></tr>`;
+        return;
+      }
+
+      parent.innerHTML = reports.map((doc, idx) => {
+        const sub = doc.type === "report" ? `LAPORAN: ${doc.studentName} (${doc.studentClass})` : `RPL: ${doc.topic}`;
+        const format = doc.type === "report" ? `Konseling Individu` : `Bimbingan Klasikal`;
+        return `
+          <tr class="border-b border-forest-750 hover:bg-forest-800/10">
+            <td class="py-4 text-forest-400 font-mono">${idx + 1}</td>
+            <td class="py-4 font-bold text-white max-w-[280px] truncate block">${sub}</td>
+            <td class="py-4 text-forest-300 font-medium">${format}</td>
+            <td class="py-4 text-zinc-400">Hari ini</td>
+            <td class="py-4 text-right space-x-1">
+              <button onclick="loadDocumentToWriter('${doc.id}')" class="px-2 py-1 bg-forest-700 hover:bg-forest-650 rounded text-[11px] font-bold text-forest-200">Buka</button>
+              <button onclick="deleteDocument('${doc.id}')" class="px-2 py-1 bg-red-950/40 border border-red-900/50 hover:bg-red-900/30 text-red-300 rounded text-[11px] font-bold">Hapus</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Calendar Tab Manager
+    function renderCalendarSchedule() {
+      const container = document.getElementById("calendar-events-container");
+      if (events.length === 0) {
+        container.innerHTML = `<div class="py-8 text-center text-forest-400">Jadwal Agenda BK Anda kosong. Tambahkan jadwal baru di form samping.</div>`;
+        return;
+      }
+
+      container.innerHTML = events.map(ev => `
+        <div class="bg-forest-850 border border-forest-750 p-4 rounded-xl flex items-center justify-between shadow-sm">
+          <div class="space-y-1">
+            <h4 class="font-extrabold text-[#E1E8E1] text-xs leading-snug">${ev.title}</h4>
+            <div class="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-forest-300">
+              <span class="flex items-center gap-1"><i data-lucide="user" class="w-3 h-3 text-forest-500"></i>Konselor: ${ev.counselor}</span>
+              <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3 text-forest-500"></i>${ev.date} - ${ev.time}</span>
+              <span class="flex items-center gap-1"><i data-lucide="video" class="w-3 h-3 text-forest-500"></i>Media: ${ev.media}</span>
+            </div>
+          </div>
+          <button onclick="deleteEvent('${ev.id}')" class="p-1.5 hover:bg-red-950/20 text-red-400/80 hover:text-red-300 transition rounded-lg">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    // Create Schedule Command
+    function createNewAgendaEvent() {
+      const title = document.getElementById("event-title").value;
+      const counselor = document.getElementById("event-counselor").value;
+      const date = document.getElementById("event-date").value;
+      const time = document.getElementById("event-time").value;
+      const media = document.getElementById("event-media").value;
+
+      if (!title || !counselor || !date || !time) {
+        alert("Semua kolom formulir agenda wajib diisi!");
+        return;
+      }
+
+      const newEvent = {
+        id: "ev-" + Date.now(),
+        title, counselor, date, time, media
+      };
+
+      events.unshift(newEvent);
+      saveAllToLocalStorage();
+      renderCalendarSchedule();
+
+      // Reset
+      document.getElementById("event-title").value = "";
+      document.getElementById("event-counselor").value = "";
+      document.getElementById("event-date").value = "";
+      document.getElementById("event-time").value = "";
+      
+      alert("Agenda bimbingan baru berhasil ditambahkan!");
+    }
+
+    // Delete Schedule Command
+    function deleteEvent(id) {
+      events = events.filter(e => e.id !== id);
+      saveAllToLocalStorage();
+      renderCalendarSchedule();
+    }
+  </script>
+</body>
+</html>

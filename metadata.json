@@ -1,0 +1,6 @@
+{
+  "name": "BK Auto Admin",
+  "description": "Asisten administrasi otomatis untuk guru Bimbingan Konseling (BK) sekolah. Membantu membuat laporan konseling, rekapitulasi, Rencana Pelaksanaan Layanan (RPL), arsip digital, dan kalender layanan.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

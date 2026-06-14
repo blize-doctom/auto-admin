@@ -1,0 +1,94 @@
+{
+  "entities": {
+    "Report": {
+      "title": "CounselingReport",
+      "description": "Laporan Formal Bimbingan Konseling Individu",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "ID unik laporan" },
+        "studentName": { "type": "string", "description": "Nama Lengkap Siswa" },
+        "studentClass": { "type": "string", "description": "Kelas/Rombel" },
+        "gender": { "type": "string", "description": "Jenis Kelamin Siswa" },
+        "counselorName": { "type": "string", "description": "Nama Guru BK" },
+        "date": { "type": "string", "format": "date", "description": "Tanggal Konseling" },
+        "serviceCategory": { "type": "string", "enum": ["Pribadi", "Sosial", "Belajar", "Karir"], "description": "Kategori Bidang Bimbingan" },
+        "rawNotes": { "type": "string", "description": "Catatan kasar bimbingan" },
+        "summary": { "type": "string", "description": "Intisari kasus siswa" },
+        "problemAnalysis": { "type": "string", "description": "Analisis psikologis kasus" },
+        "actionPlan": { "type": "string", "description": "Rencana tindak lanjut layanan" },
+        "formalReportMarkdown": { "type": "string", "description": "Output Laporan formal utuh markdown" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Waktu pembuatan dokumen" }
+      },
+      "required": ["id", "studentName", "studentClass", "gender", "counselorName", "date", "serviceCategory", "rawNotes", "summary", "problemAnalysis", "actionPlan", "formalReportMarkdown", "createdAt"]
+    },
+    "Rpl": {
+      "title": "RplTemplate",
+      "description": "Rencan Pelaksanaan Layanan Klasikal BK",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "ID unik RPL" },
+        "topic": { "type": "string", "description": "Tema atau Topik Layanan" },
+        "classGrade": { "type": "string", "description": "Sasaran Tingkat Kelas" },
+        "serviceField": { "type": "string", "enum": ["Pribadi", "Sosial", "Belajar", "Karir"], "description": "Bidang Bimbingan" },
+        "serviceType": { "type": "string", "description": "Jenis Layanan BK" },
+        "duration": { "type": "string", "description": "Alokasi Waktu Layanan" },
+        "focusPoints": { "type": "string", "description": "Poin Fokus Pembahasan" },
+        "objectives": { "type": "string", "description": "Tujuan khusus layanan" },
+        "activities": { "type": "string", "description": "Langkah skenario kegiatan" },
+        "evaluation": { "type": "string", "description": "Metode evaluasi proses dan hasil" },
+        "fullRplMarkdown": { "type": "string", "description": "RPL utuh format markdown MGBK" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Waktu pembuatan dokumen" }
+      },
+      "required": ["id", "topic", "classGrade", "serviceField", "serviceType", "duration", "focusPoints", "objectives", "activities", "evaluation", "fullRplMarkdown", "createdAt"]
+    },
+    "Recap": {
+      "title": "RecapReport",
+      "description": "Laporan Rekapitulasi Kompilasi Bulanan Pelayanan BK",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "ID unik rekap" },
+        "period": { "type": "string", "description": "Periode Bulan Rekap" },
+        "dateGenerated": { "type": "string", "format": "date", "description": "Tanggal Pembuatan Rekap" },
+        "recordIds": { "type": "array", "description": "Representasi ID Reports terafiliasi" },
+        "identifiedTrends": { "type": "string", "description": "Analisis Tren Kasus" },
+        "recommedationsForSchool": { "type": "string", "description": "Rekomendasi Kebijakan Sekolah" },
+        "fullRecapMarkdown": { "type": "string", "description": "Markup Laporan Rekap formal" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Waktu pembuatan dokumen" }
+      },
+      "required": ["id", "period", "dateGenerated", "recordIds", "identifiedTrends", "recommedationsForSchool", "fullRecapMarkdown", "createdAt"]
+    },
+    "Event": {
+      "title": "CalendarEvent",
+      "description": "Agenda Jadwal Pelayanan Konseling BK",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "ID unik event agenda" },
+        "title": { "type": "string", "description": "Judul Agenda" },
+        "date": { "type": "string", "format": "date", "description": "Tanggal Agenda" },
+        "time": { "type": "string", "description": "Waktu Jam Agenda" },
+        "type": { "type": "string", "enum": ["konseling", "home_visit", "klasikal", "konferensi", "ortu", "lainnya"], "description": "Tipe Kategori Acara" },
+        "studentName": { "type": "string", "description": "Nama Siswa yang disasar jika ada" },
+        "description": { "type": "string", "description": "Keterangan agenda tambahan" }
+      },
+      "required": ["id", "title", "date", "time", "type"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/reports/{reportId}": {
+      "schema": "Report",
+      "description": "Penyimpanan Laporan Konseling Individu siswa terikat per konselor"
+    },
+    "/users/{userId}/rpls/{rplId}": {
+      "schema": "Rpl",
+      "description": "Penyimpanan RPL Bimbingan Klasikal terikat per konselor"
+    },
+    "/users/{userId}/recaps/{recapId}": {
+      "schema": "Recap",
+      "description": "Penyimpanan Laporan Rekapitulasi Bulanan bimbingan konselor"
+    },
+    "/users/{userId}/events/{eventId}": {
+      "schema": "Event",
+      "description": "Penyimpanan Agenda kalender konselor"
+    }
+  }
+}

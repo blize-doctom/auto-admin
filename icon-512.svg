@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <!-- Squircle Background -->
+  <rect x="24" y="24" width="464" height="464" rx="112" fill="#121612" stroke="#2D382F" stroke-width="8" />
+  
+  <!-- Outer glowing concentric circles representing support and protection -->
+  <circle cx="256" cy="256" r="180" fill="none" stroke="#222F24" stroke-width="6" stroke-dasharray="12 12" />
+  <circle cx="256" cy="256" r="160" fill="none" stroke="#2D382F" stroke-width="4" />
+
+  <!-- The Open Book Structure (Guidance & Recording) -->
+  <path d="M156 360 C196 360 226 340 256 320 C286 340 316 360 356 360 L356 220 C316 220 286 200 256 180 C226 200 196 220 156 220 Z" fill="#1F2820" stroke="#8F9F77" stroke-width="8" stroke-linejoin="round" />
+  
+  <!-- Ribbon holding the book pages -->
+  <path d="M256 180 L256 332" stroke="#9CC09E" stroke-width="8" stroke-linecap="round" />
+
+  <!-- Hands / Shield of Empathy & Counsel -->
+  <!-- Left Wing/Hand -->
+  <path d="M120 180 C110 240 160 330 256 390 C180 370 140 300 130 220 Z" fill="#4A5D4E" />
+  <path d="M120 180 C110 240 160 330 256 390" fill="none" stroke="#9CC09E" stroke-width="8" stroke-linecap="round" />
+  
+  <!-- Right Wing/Hand -->
+  <path d="M392 180 C402 240 352 330 256 390 C332 370 372 300 382 220 Z" fill="#4A5D4E" />
+  <path d="M392 180 C402 240 352 330 256 390" fill="none" stroke="#9CC09E" stroke-width="8" stroke-linecap="round" />
+
+  <!-- Heart / Spark of Growth (Counseling success and care) -->
+  <path d="M256 170 C242 150 216 150 216 128 C216 112 230 100 256 100 C282 100 296 112 296 128 C296 150 270 150 256 170 Z" fill="#E1B530" />
+  <circle cx="256" cy="128" r="8" fill="#FFFFFF" />
+
+  <!-- Decorative small sparkles representing auto Intelligence -->
+  <path d="M176 130 L184 134 L176 138 L168 134 Z" fill="#9CC09E" />
+  <path d="M336 130 L344 134 L336 138 L328 134 Z" fill="#9CC09E" />
+</svg>
